@@ -36,7 +36,7 @@ Projekt OTSW składa się z następujących modułów:
    - Kontroluje zachowanie klientów, takich jak częstotliwość wysyłania wiadomości, wielkość wiadomości, itp.
 
 3. **Klienci**:
-   - Klienci są zaimplementowani w różnych językach programowania (Java, Python, JavaScript).
+   - Klienci są zaimplementowani w różnych językach programowania (Java, Python).
    - Używają protokołu WebSocket do komunikacji z serwerem.
    - Aplikacja testująca pozwala na automatyczne uruchamianie wielu instancji klientów i zdalne sterowanie ich zachowaniem.
 
