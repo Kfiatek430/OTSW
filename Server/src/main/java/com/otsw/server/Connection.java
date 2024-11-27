@@ -6,6 +6,7 @@ import org.apache.logging.log4j.*;
 
 import java.io.*;
 import java.net.*;
+import java.util.Set;
 
 public class Connection extends Thread {
     private final int id;
@@ -21,6 +22,14 @@ public class Connection extends Thread {
         this.id = id;
         setName("Connection." + port + '.' + id);
         logger.info("[-] Socket connected " + this);
+    }
+
+    private void readHandshake(Set<String> messages) {
+        messages.forEach(message -> {
+            if(!message.contains("HTTP/1.1")) {
+
+            }
+        });
     }
 
     @SneakyThrows
