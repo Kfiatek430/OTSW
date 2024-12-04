@@ -13,6 +13,7 @@ public class Server extends Thread {
   private final ServerSocket serverSocket;
   private final Set<Connection> connections = new HashSet<>();
   private static final Logger logger = LogManager.getLogger(Server.class.getName());
+  static final String address = "127.0.0.1";
 
   @SneakyThrows
   public Server(int port) {
