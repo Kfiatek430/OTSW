@@ -1,0 +1,11 @@
+2024-12-07 12:09:51.908 [main] INFO  com.otsw.server.Server - [-] Server is starting...
+2024-12-07 12:09:51.912 [main] INFO  com.otsw.server.Server - [-] Server properties: ServerSocket[addr=0.0.0.0/0.0.0.0,localport=8000]
+2024-12-07 12:09:51.913 [Server.8000] INFO  com.otsw.server.Server - [-] Waiting for connections...
+2024-12-07 12:10:12.577 [Server.8000] INFO  com.otsw.server.Connection - [-] Socket connected Thread[#32,Connection.8000.1,5,main]
+2024-12-07 12:10:12.578 [Server.8000] INFO  com.otsw.server.Server - [-] Connected clients: 1
+2024-12-07 12:10:12.580 [Connection.8000.1] INFO  com.otsw.server.Server - [+] Message: GET / HTTP/1.1
+2024-12-07 12:10:12.581 [Connection.8000.1] INFO  com.otsw.server.Server - [+] Message: Host: localhost:8000
+2024-12-07 12:10:12.582 [Connection.8000.1] INFO  com.otsw.server.Server - [+] Message: Connection: Upgrade
+2024-12-07 12:10:30.656 [Server.8000] INFO  com.otsw.server.Connection - [-] Socket connected Thread[#33,Connection.8000.2,5,main]
+2024-12-07 12:10:30.657 [Server.8000] INFO  com.otsw.server.Server - [-] Connected clients: 2
+2024-12-07 12:10:30.657 [Connection.8000.2] INFO  com.otsw.server.Server - [+] Message: GET / HTTP/1.1
