@@ -32,20 +32,24 @@ public class Server extends Thread {
     while (true) {
       clientId++;
       Connection conn = new Connection(this, serverSocket.accept(), serverSocket.getLocalPort(), clientId);
-      conn.start();
-      connections.add(conn);
-      logger.info("[-] Connected clients: " + connections.size());
+      if (conn.performHandshake()) {
+        conn.start();
+        connections.add(conn);
+        logger.info("[-] Connected clients: {}", connections.size());
+      } else {
+        logger.warn("[-] Connection refused: invalid handshake");
+      }
     }
   }
 
   public void unsubscribe(Connection conn) {
-    logger.info("[-] Unsubscribe client " + conn);
+    logger.info("[-] Unsubscribe client {}", conn);
     connections.remove(conn);
-    logger.info("[-] Connected clients: " + connections.size());
+    logger.info("[-] Connected clients: {}", connections.size());
   }
 
   public void broadcastMessages(String message) {
-    logger.info("[+] Message: " + message);
+    logger.info("[+] Message: {}", message);
     connections.forEach(connection -> connection.writeMessage(message));
   }
 }

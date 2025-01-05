@@ -6,8 +6,10 @@ import org.apache.logging.log4j.*;
 
 import java.io.*;
 import java.net.*;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Optional;
 
 public class Connection extends Thread {
   private final int id;
@@ -22,26 +24,7 @@ public class Connection extends Thread {
     this.connection = connection;
     this.id = id;
     setName("Connection." + port + '.' + id);
-    logger.info("[-] Socket connected " + this);
-  }
-
-  private void readHandshake(Set<String> messages) {
-    AtomicInteger validFields = new AtomicInteger();
-    messages.forEach(message -> {
-      if(message.contains("Host") && message.substring(6).equals(Server.address)) {
-        validFields.getAndIncrement();
-      } else if(message.contains("Upgrade") && message.substring(9).equals("websocket")) {
-        validFields.getAndIncrement();
-      } else if(message.contains("Connection") && message.substring(12).equals("upgrade")) {
-        validFields.getAndIncrement();
-      }
-    });
-  }
-
-  @SneakyThrows
-  public void run() {
-    setupBuffered();
-    readMessages();
+    logger.info("[-] Socket connected {}", this);
   }
 
   @SneakyThrows
@@ -51,9 +34,54 @@ public class Connection extends Thread {
   }
 
   @SneakyThrows
+  boolean performHandshake() {
+    setupBuffered();
+    ArrayList<String> handshakeLines = readHandshake();
+    String key = handshakeLines
+        .stream()
+        .filter(l -> l.startsWith("Sec-WebSocket-Key: "))
+        .findFirst()
+        .map(l -> l.substring(19))
+        .orElse("");
+
+    if (key.length() == 24) {
+      writer.write("HTTP/1.1 101 Switching Protocols\n");
+      writer.write("Upgrade: websocket\n");
+      writer.write("Connection: Upgrade\n");
+
+      String keyResp = key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+      byte[] Sha1KeyResp = MessageDigest.getInstance("SHA1").digest((keyResp).getBytes());
+      String Base64KeyResp = Base64.getEncoder().encodeToString(Sha1KeyResp);
+      writer.write("Sec-WebSocket-Accept: " + Base64KeyResp + "\n\n");
+
+      writer.flush();
+      return true;
+    }
+
+    connection.close();
+    return false;
+  }
+
+
+  @SneakyThrows
+  private ArrayList<String> readHandshake() {
+    ArrayList<String> handshakeLines = new ArrayList<>();
+    String line;
+    while(!(line = reader.readLine()).isEmpty()) {
+      handshakeLines.add(line);
+    }
+    return handshakeLines;
+  }
+
+  @SneakyThrows
+  public void run() {
+    readMessages();
+  }
+
+  @SneakyThrows
   private void readMessages() {
     String message = "";
-    while (!message.equals("exit")) {
+    while (message == null || !message.equals("exit")) {
       try {
         message = reader.readLine();
       } catch (SocketException e) {
@@ -63,7 +91,7 @@ public class Connection extends Thread {
         writer.close();
         return;
       }
-      server.broadcastMessages(message);
+      if (message != null) server.broadcastMessages(message);
     }
   }
 
