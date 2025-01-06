@@ -7,9 +7,7 @@ import org.apache.logging.log4j.*;
 import java.io.*;
 import java.net.*;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Optional;
+import java.util.*;
 
 public class Connection extends Thread {
   private final int id;
@@ -36,41 +34,48 @@ public class Connection extends Thread {
   @SneakyThrows
   boolean performHandshake() {
     setupBuffered();
-    ArrayList<String> handshakeLines = readHandshake();
-    String key = handshakeLines
-        .stream()
-        .filter(l -> l.startsWith("Sec-WebSocket-Key: "))
-        .findFirst()
-        .map(l -> l.substring(19))
-        .orElse("");
+    Map<String,String> handshake = readHandshake();
+    String wsKey = handshake.getOrDefault("Sec-WebSocket-Key", "");
 
-    if (key.length() == 24) {
+    if (handshake.containsKey("GET / HTTP/1.1") &&
+        handshake.containsKey("Host") /* TODO sprawdzić zgodność adresu */ &&
+        handshake.getOrDefault("Upgrade","").equals("websocket") &&
+        handshake.getOrDefault("Connection", "").equals("Upgrade") &&
+        wsKey.length() == 24 &&
+        handshake.getOrDefault("Sec-WebSocket-Version", "").equals("13")) {
+
       writer.write("HTTP/1.1 101 Switching Protocols\n");
       writer.write("Upgrade: websocket\n");
       writer.write("Connection: Upgrade\n");
 
-      String keyResp = key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+      String keyResp = wsKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
       byte[] Sha1KeyResp = MessageDigest.getInstance("SHA1").digest((keyResp).getBytes());
       String Base64KeyResp = Base64.getEncoder().encodeToString(Sha1KeyResp);
       writer.write("Sec-WebSocket-Accept: " + Base64KeyResp + "\n\n");
-
       writer.flush();
+
       return true;
+    } else {
+      logger.warn("Error in incomming handshake: {}", handshake);
+      connection.close();
+      return false;
     }
 
-    connection.close();
-    return false;
   }
 
-
   @SneakyThrows
-  private ArrayList<String> readHandshake() {
-    ArrayList<String> handshakeLines = new ArrayList<>();
+  private Map<String,String> readHandshake() {
+    Map<String,String> handshake = new HashMap<>();
     String line;
     while(!(line = reader.readLine()).isEmpty()) {
-      handshakeLines.add(line);
+      if (line.indexOf(": ")> 0) {
+        String[] kv = line.split(": ");
+        handshake.put(kv[0], kv[1]);
+      } else {
+        handshake.put(line, "");
+      }
     }
-    return handshakeLines;
+    return handshake;
   }
 
   @SneakyThrows

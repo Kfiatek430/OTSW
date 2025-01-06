@@ -36,8 +36,6 @@ public class Server extends Thread {
         conn.start();
         connections.add(conn);
         logger.info("[-] Connected clients: {}", connections.size());
-      } else {
-        logger.warn("[-] Connection refused: invalid handshake");
       }
     }
   }
