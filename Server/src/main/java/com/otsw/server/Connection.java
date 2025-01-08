@@ -105,4 +105,12 @@ public class Connection extends Thread {
     writer.write(str + '\n');
     writer.flush();
   }
+
+  @SneakyThrows
+  public boolean isClosingHandshake() {
+    int firstByte = reader.read();
+    int secondByte = reader.read();
+
+    return true;
+  }
 }
