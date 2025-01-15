@@ -86,18 +86,15 @@ public class Connection extends Thread {
   @SneakyThrows
   private void readMessages() {
     String message = "";
-    while (message == null || !message.equals("exit")) {
-      try {
+    while (message == null || isClosingHandshake()) {
         message = reader.readLine();
-      } catch (SocketException e) {
-        server.unsubscribe(this);
-        connection.close();
-        reader.close();
-        writer.close();
-        return;
-      }
-      if (message != null) server.broadcastMessages(message);
+        if (message != null) server.broadcastMessages(message);
     }
+
+    server.unsubscribe(this);
+    connection.close();
+    reader.close();
+    writer.close();
   }
 
   @SneakyThrows
@@ -110,6 +107,20 @@ public class Connection extends Thread {
   public boolean isClosingHandshake() {
     int firstByte = reader.read();
     int secondByte = reader.read();
+
+    int mask = firstByte >> 7;
+    if(mask != 1) {
+      return false;
+    }
+
+    int payload = firstByte & 0b01111111;
+    if(payload == 126) {
+      payload = (reader.read() << 8) | reader.read();
+    } else if(payload == 127) {
+      for(int i = 0; i < 8; i++) {
+        reader.read();
+      }
+    }
 
     return true;
   }
