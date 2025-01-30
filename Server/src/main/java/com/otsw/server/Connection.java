@@ -84,11 +84,13 @@ public class Connection extends Thread {
   }
 
   @SneakyThrows
-  private void readMessages() {
+  public void readMessages() {
     String message = "";
-    while (message == null || isClosingHandshake()) {
-        message = reader.readLine();
-        if (message != null) server.broadcastMessages(message);
+    while ((message = reader.readLine()) != null) {
+        logger.info("Received message: {}", message);  // Logowanie wiadomości
+        if (isClosingHandshake()) break;
+
+        server.broadcastMessages(message);
     }
 
     server.unsubscribe(this);
@@ -105,23 +107,25 @@ public class Connection extends Thread {
 
   @SneakyThrows
   public boolean isClosingHandshake() {
-    int firstByte = reader.read();
-    int secondByte = reader.read();
-
-    int mask = firstByte >> 7;
-    if(mask != 1) {
-      return false;
-    }
-
-    int payload = firstByte & 0b01111111;
-    if(payload == 126) {
-      payload = (reader.read() << 8) | reader.read();
-    } else if(payload == 127) {
-      for(int i = 0; i < 8; i++) {
-        reader.read();
+    connection.setSoTimeout(10);
+    try {
+      int firstByte = reader.read();
+      if(firstByte == -1) {
+        logger.warn("[!] Connection closed unexpectedly");
+        return true;
       }
-    }
 
-    return true;
+      int opcode = firstByte & 0x0F;
+      if(opcode == 8) {
+        logger.info("[-] Received closing handshake");
+        return true;
+      }
+
+      return false;
+    } catch (SocketTimeoutException ignored) {
+      return false;
+    } finally {
+      connection.setSoTimeout(0);
+    }
   }
 }
