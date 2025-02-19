@@ -49,9 +49,9 @@ public class Connection extends Thread {
       writer.write("Connection: Upgrade\n");
 
       String keyResp = wsKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-      byte[] Sha1KeyResp = MessageDigest.getInstance("SHA1").digest((keyResp).getBytes());
-      String Base64KeyResp = Base64.getEncoder().encodeToString(Sha1KeyResp);
-      writer.write("Sec-WebSocket-Accept: " + Base64KeyResp + "\n\n");
+      byte[] sha1KeyResp = MessageDigest.getInstance("SHA1").digest((keyResp).getBytes());
+      String base64KeyResp = Base64.getEncoder().encodeToString(sha1KeyResp);
+      writer.write("Sec-WebSocket-Accept: " + base64KeyResp + "\n\n");
       writer.flush();
 
       return true;
