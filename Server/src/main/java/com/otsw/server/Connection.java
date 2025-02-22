@@ -34,48 +34,47 @@ public class Connection extends Thread {
   @SneakyThrows
   boolean performHandshake() {
     setupBuffered();
-    Map<String,String> handshake = readHandshake();
-    String wsKey = handshake.getOrDefault("Sec-WebSocket-Key", "");
+    Map<String, String> requestHeaders = readHandshake();
+    String clientWebSocketKey = requestHeaders.getOrDefault("Sec-WebSocket-Key", "");
 
-    if (handshake.containsKey("GET / HTTP/1.1") &&
-        handshake.containsKey("Host") /* TODO sprawdzić zgodność adresu */ &&
-        handshake.getOrDefault("Upgrade","").equals("websocket") &&
-        handshake.getOrDefault("Connection", "").equals("Upgrade") &&
-        wsKey.length() == 24 &&
-        handshake.getOrDefault("Sec-WebSocket-Version", "").equals("13")) {
+    if (requestHeaders.containsKey("GET / HTTP/1.1") &&
+      requestHeaders.containsKey("Host") /* TODO sprawdzić zgodność adresu */ &&
+      "websocket".equals(requestHeaders.getOrDefault("Upgrade", "")) &&
+      "Upgrade".equals(requestHeaders.getOrDefault("Connection", "")) &&
+      clientWebSocketKey.length() == 24 &&
+      "13".equals(requestHeaders.getOrDefault("Sec-WebSocket-Version", ""))) {
 
       writer.write("HTTP/1.1 101 Switching Protocols\n");
       writer.write("Upgrade: websocket\n");
       writer.write("Connection: Upgrade\n");
 
-      String keyResp = wsKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-      byte[] sha1KeyResp = MessageDigest.getInstance("SHA1").digest((keyResp).getBytes());
-      String base64KeyResp = Base64.getEncoder().encodeToString(sha1KeyResp);
-      writer.write("Sec-WebSocket-Accept: " + base64KeyResp + "\n\n");
+      String concatenatedKey = clientWebSocketKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+      byte[] sha1HashedKey = MessageDigest.getInstance("SHA1").digest(concatenatedKey.getBytes());
+      String serverAcceptKey = Base64.getEncoder().encodeToString(sha1HashedKey);
+      writer.write("Sec-WebSocket-Accept: " + serverAcceptKey + "\n\n");
       writer.flush();
 
       return true;
     } else {
-      logger.warn("Error in incomming handshake: {}", handshake);
+      logger.warn("[!] Error in incoming handshake: {}", requestHeaders);
       connection.close();
       return false;
     }
-
   }
 
   @SneakyThrows
-  private Map<String,String> readHandshake() {
-    Map<String,String> handshake = new HashMap<>();
+  private Map<String, String> readHandshake() {
+    Map<String, String> requestHeaders = new HashMap<>();
     String line;
-    while(!(line = reader.readLine()).isEmpty()) {
-      if (line.indexOf(": ")> 0) {
-        String[] kv = line.split(": ");
-        handshake.put(kv[0], kv[1]);
+    while (!(line = reader.readLine()).isEmpty()) {
+      if (line.indexOf(": ") > 0) {
+        String[] headerParts = line.split(": ");
+        requestHeaders.put(headerParts[0], headerParts[1]);
       } else {
-        handshake.put(line, "");
+        requestHeaders.put(line, "");
       }
     }
-    return handshake;
+    return requestHeaders;
   }
 
   @SneakyThrows
@@ -87,10 +86,9 @@ public class Connection extends Thread {
   public void readMessages() {
     String message = "";
     while ((message = reader.readLine()) != null) {
-        logger.info("Received message: {}", message);  // Logowanie wiadomości
-        if (isClosingHandshake()) break;
+      if (isClosingHandshake()) break;
 
-        server.broadcastMessages(message);
+      server.broadcastMessages(message);
     }
 
     server.unsubscribe(this);
