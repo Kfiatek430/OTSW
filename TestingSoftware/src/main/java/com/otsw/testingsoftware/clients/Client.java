@@ -1,4 +1,4 @@
-package com.otsw.javaClient;
+package com.otsw.testingsoftware.clients;
 
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
@@ -33,9 +33,10 @@ public class Client extends Thread {
 
   public void run() {
     if(performHandshake()) {
-      new Thread(this::sendMessages, "Client Sender").start();
+//      new Thread(this::sendMessages, "Client Sender").start();
       new Thread(this::reciveMessages, "Client Receiver").start();
     }
+
   }
 
   @SneakyThrows
@@ -46,7 +47,7 @@ public class Client extends Thread {
   }
 
   @SneakyThrows
-  boolean performHandshake() {
+  private boolean performHandshake() {
     setupBuffered();
 
     writer.write("GET / HTTP/1.1\n");
@@ -129,6 +130,18 @@ public class Client extends Thread {
   }
 
   @lombok.SneakyThrows
+  protected void sendByte(byte value) {
+    logger.info(value);
+    writer.write((char) value);
+    writer.flush();
+  }
+
+  @lombok.SneakyThrows
+  protected void sendText(String message) {
+    writer.write(message + '\n');
+  }
+
+  @lombok.SneakyThrows
   private void reciveMessages() {
     String message = "";
     while(shouldContinue && (message = reader.readLine()) != null) {
@@ -136,3 +149,4 @@ public class Client extends Thread {
     }
   }
 }
+
