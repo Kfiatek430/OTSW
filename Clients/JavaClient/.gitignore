@@ -2,4 +2,3 @@ target/
 .idea/
 out/
 lib/
->>>>>>> fd62871 (Dopisanie katalogów w .gitignore, wyłączenie zapisywania logów do plików)
