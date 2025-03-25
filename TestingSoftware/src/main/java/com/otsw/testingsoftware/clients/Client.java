@@ -17,9 +17,10 @@ public class Client extends Thread {
   BufferedReader consoleReader;
   BufferedWriter writer;
   BufferedReader reader;
-  private static final Logger logger = LogManager.getLogger(Client.class.getName());
+  protected static final Logger logger = LogManager.getLogger(Client.class.getName());
   private int port = -1;
   private volatile boolean shouldContinue = true;
+  protected volatile boolean isConnected = false;
 
   @SneakyThrows
   public Client(int port) {
@@ -32,7 +33,9 @@ public class Client extends Thread {
   }
 
   public void run() {
-    if(performHandshake()) {
+    isConnected = performHandshake();
+
+    if(isConnected) {
 //      new Thread(this::sendMessages, "Client Sender").start();
       new Thread(this::reciveMessages, "Client Receiver").start();
     }
@@ -130,13 +133,6 @@ public class Client extends Thread {
   }
 
   @lombok.SneakyThrows
-  protected void sendByte(byte value) {
-    logger.info(value);
-    writer.write((char) value);
-    writer.flush();
-  }
-
-  @lombok.SneakyThrows
   protected void sendText(String message) {
     writer.write(message + '\n');
   }
@@ -146,6 +142,13 @@ public class Client extends Thread {
     String message = "";
     while(shouldContinue && (message = reader.readLine()) != null) {
       logger.info("[+] Message: " + message);
+    }
+  }
+
+  @SneakyThrows
+  public void waitForConnection() {
+    while(!isConnected) {
+      Thread.sleep(100);
     }
   }
 }
