@@ -133,11 +133,6 @@ public class Client extends Thread {
   }
 
   @lombok.SneakyThrows
-  protected void sendText(String message) {
-    writer.write(message + '\n');
-  }
-
-  @lombok.SneakyThrows
   private void reciveMessages() {
     String message = "";
     while(shouldContinue && (message = reader.readLine()) != null) {
