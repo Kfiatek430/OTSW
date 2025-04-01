@@ -1,4 +1,4 @@
-package com.otsw.testingsoftware.clients;
+package com.kfiatek.otsw.clients;
 
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;

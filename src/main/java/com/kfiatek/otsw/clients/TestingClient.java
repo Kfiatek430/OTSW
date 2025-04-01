@@ -1,6 +1,6 @@
-package com.otsw.testingsoftware.clients;
+package com.kfiatek.otsw.clients;
 
-import com.otsw.testingsoftware.enums.TextTypes;
+import com.kfiatek.otsw.enums.TextTypes;
 import lombok.SneakyThrows;
 import java.util.Base64;
 import java.util.EnumSet;

@@ -1,4 +1,4 @@
-package com.otsw.testingsoftware.enums;
+package com.kfiatek.otsw.enums;
 
 public enum TextTypes {
   LOWER_CASE("abcdefghijklmnoprstuwxyz"),

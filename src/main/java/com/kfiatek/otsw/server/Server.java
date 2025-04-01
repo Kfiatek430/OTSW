@@ -1,4 +1,4 @@
-package com.otsw.server;
+package com.kfiatek.otsw.server;
 
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
