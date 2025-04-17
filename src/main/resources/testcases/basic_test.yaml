@@ -1,0 +1,15 @@
+testName: BasicEchoTest
+clients: 1
+message:
+  count: 5
+  length: 10
+  characters:
+    - LOWER_CASE
+    - UPPER_CASE
+  frequencyMs: 100
+connection:
+  port: 8000
+  connectDelayMs: 0
+validation:
+  echoExpected: true
+  timeoutMs: 2000
