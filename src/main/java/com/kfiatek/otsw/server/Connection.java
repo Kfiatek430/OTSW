@@ -85,7 +85,12 @@ public class Connection extends Thread {
   @SneakyThrows
   public void readMessages() {
     String message = "";
-    while ((message = reader.readLine()) != null) {
+    while (message != null) {
+      try {
+        message = reader.readLine();
+      } catch (SocketException e) {
+        break;
+      }
       if (isClosingHandshake()) break;
 
       server.broadcastMessages(message);
