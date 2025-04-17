@@ -11,16 +11,19 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class Client extends Thread {
-  Socket socket;
-  BufferedReader consoleReader;
-  BufferedWriter writer;
-  BufferedReader reader;
+  private final Socket socket;
+  private BufferedWriter writer;
+  protected BufferedReader reader;
   protected static final Logger logger = LogManager.getLogger(Client.class.getName());
   private int port = -1;
-  private volatile boolean shouldContinue = true;
+  protected volatile boolean shouldContinue = true;
   protected volatile boolean isConnected = false;
+  private final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
   @SneakyThrows
   public Client(int port) {
@@ -32,25 +35,25 @@ public class Client extends Thread {
     start();
   }
 
+  @SneakyThrows
+  public void sendText(String msg) {
+    writer.write(msg + '\n');
+    writer.flush();
+  }
+
   public void run() {
     isConnected = performHandshake();
-
-    if(isConnected) {
-//      new Thread(this::sendMessages, "Client Sender").start();
-      new Thread(this::reciveMessages, "Client Receiver").start();
-    }
-
+    if(isConnected) receiveMessages();
   }
 
   @SneakyThrows
-  private void setupBuffered() {
-    consoleReader = new BufferedReader(new InputStreamReader(System.in));
+  protected void setupBuffered() {
     writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
     reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
   }
 
   @SneakyThrows
-  private boolean performHandshake() {
+  protected boolean performHandshake() {
     setupBuffered();
 
     writer.write("GET / HTTP/1.1\n");
@@ -102,10 +105,9 @@ public class Client extends Thread {
     return requestHeaders;
   }
 
-  @lombok.SneakyThrows
-  private void closeClient() {
+  @SneakyThrows
+  void closeClient() {
     this.shouldContinue = false;
-    consoleReader.close();
 
     writer.write("\n");
     writer.write((char) 0x88);
@@ -118,26 +120,17 @@ public class Client extends Thread {
     logger.info("[-] Unsubscribed from server");
   }
 
-  @lombok.SneakyThrows
-  private void sendMessages() {
+  @SneakyThrows
+  protected void receiveMessages() {
     String message = "";
-    while(shouldContinue) {
-      message = consoleReader.readLine();
-      if(message.equalsIgnoreCase("exit")) {
-        closeClient();
-      } else {
-        writer.write(message + '\n');
-        writer.flush();
-      }
+    while(shouldContinue && (message = reader.readLine()) != null) {
+      messages.add(message);
     }
   }
 
-  @lombok.SneakyThrows
-  private void reciveMessages() {
-    String message = "";
-    while(shouldContinue && (message = reader.readLine()) != null) {
-      logger.info("[+] Message: " + message);
-    }
+  @SneakyThrows
+  public String readLine(long milliseconds) {
+    return messages.poll(milliseconds, TimeUnit.MILLISECONDS);
   }
 
   @SneakyThrows
