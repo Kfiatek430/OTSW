@@ -6,12 +6,40 @@ import java.util.EnumSet;
 import java.util.Random;
 
 public class TestingClient extends Client {
-  public TestingClient(int port) {
+  private final int id;
+  private final int count;
+  private final int length;
+  private final EnumSet<TextTypes> types;
+  private final int frequencyMs;
+
+  public TestingClient(int id, int port, int count, int length, EnumSet<TextTypes> types, int frequencyMs) {
     super(port);
+    this.id = id;
+    this.count = count;
+    this.length = length;
+    this.types = types;
+    this.frequencyMs = frequencyMs;
   }
 
   @SneakyThrows
-  public void sendText(int count, EnumSet<TextTypes> types) {
+  public void run() {
+    isConnected = performHandshake();
+    if(isConnected) {
+      new Thread(this::receiveMessages, "ClientReceiver." + port + '.' + id);
+      new Thread(this::performTest, "ClientPerformer." + port + '.' + id);
+    }
+  }
+
+  @SneakyThrows
+  public void performTest() {
+    for (int i = 0; i < count; i++) {
+      sendText(length, types);
+      Thread.sleep(frequencyMs);
+    }
+  }
+
+  @SneakyThrows
+  public void sendText(int length, EnumSet<TextTypes> types) {
     if(!isConnected) {
       logger.warn("[!] Client is not connected yet!");
       return;
@@ -24,19 +52,11 @@ public class TestingClient extends Client {
 
     StringBuilder builder = new StringBuilder();
     Random random = new Random();
-    while(builder.length() < count) {
+    while(builder.length() < length) {
       int index = (int) (random.nextFloat() * characters.length());
       builder.append(characters.charAt(index));
     }
 
     sendText(builder.toString());
-  }
-
-  public void sendText(int count) {
-    sendText(count, EnumSet.of(TextTypes.LOWER_CASE));
-  }
-
-  public void sendText() {
-    sendText(10);
   }
 }

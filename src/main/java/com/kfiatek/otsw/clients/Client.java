@@ -20,7 +20,7 @@ public class Client extends Thread {
   private BufferedWriter writer;
   protected BufferedReader reader;
   protected static final Logger logger = LogManager.getLogger(Client.class.getName());
-  private int port = -1;
+  protected int port;
   protected volatile boolean shouldContinue = true;
   protected volatile boolean isConnected = false;
   private final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
@@ -30,7 +30,7 @@ public class Client extends Thread {
     logger.info("[-] Client is starting...");
     socket = new Socket("localhost", port);
     this.port = port;
-    logger.info("[-] Client properties: " + socket);
+    logger.info("[-] Client properties: {}", socket);
     setName("Client");
     start();
   }

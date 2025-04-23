@@ -19,7 +19,7 @@ public class Server extends Thread {
   public Server(int port) {
     logger.info("[-] Server is starting...");
     serverSocket = new ServerSocket(port);
-    logger.info("[-] Server properties: " + serverSocket);
+    logger.info("[-] Server properties: {}", serverSocket);
 
     setName("Server." + port);
     start();
