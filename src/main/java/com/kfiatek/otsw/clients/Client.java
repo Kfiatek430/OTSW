@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.security.MessageDigest;
 import java.util.Base64;
@@ -16,8 +17,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class Client extends Thread {
-  private final Socket socket;
-  private BufferedWriter writer;
+  private Socket socket;
+  protected BufferedWriter writer;
   protected BufferedReader reader;
   protected static final Logger logger = LogManager.getLogger(Client.class.getName());
   protected int port;
@@ -28,11 +29,14 @@ public class Client extends Thread {
   @SneakyThrows
   public Client(int port) {
     logger.info("[-] Client is starting...");
-    socket = new Socket("localhost", port);
     this.port = port;
-    logger.info("[-] Client properties: {}", socket);
-    setName("Client");
-    start();
+    try {
+      socket = new Socket("localhost", port);
+      logger.info("[-] Client properties: {}", socket);
+      setName("Client");
+    } catch (ConnectException e) {
+      logger.error("[!] Failed to connect to server at port {}", port);
+    }
   }
 
   @SneakyThrows
@@ -131,13 +135,6 @@ public class Client extends Thread {
   @SneakyThrows
   public String readLine(long milliseconds) {
     return messages.poll(milliseconds, TimeUnit.MILLISECONDS);
-  }
-
-  @SneakyThrows
-  public void waitForConnection() {
-    while(!isConnected) {
-      Thread.sleep(100);
-    }
   }
 }
 
