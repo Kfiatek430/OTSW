@@ -1,0 +1,13 @@
+testName: HighFrequencyTest
+clients: 3
+message:
+  count: 50
+  length: 20
+  characters:
+    - LOWER_CASE
+  frequencyMs: 10
+connection:
+  port: 8000
+  connectDelayMs: 100
+validation:
+  timeoutMs: 1000

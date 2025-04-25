@@ -1,0 +1,14 @@
+testName: LongMessageTest
+clients: 1
+message:
+  count: 10
+  length: 200
+  characters:
+    - UPPER_CASE
+    - DIGITS
+  frequencyMs: 200
+connection:
+  port: 8000
+  connectDelayMs: 0
+validation:
+  timeoutMs: 3000

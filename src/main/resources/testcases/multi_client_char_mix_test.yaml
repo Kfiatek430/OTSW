@@ -1,0 +1,16 @@
+testName: MultiClientCharMixTest
+clients: 5
+message:
+  count: 20
+  length: 50
+  characters:
+    - LOWER_CASE
+    - UPPER_CASE
+    - DIGITS
+    - SPECIAL_CHARACTERS
+  frequencyMs: 100
+connection:
+  port: 8000
+  connectDelayMs: 50
+validation:
+  timeoutMs: 2500

@@ -11,5 +11,4 @@ connection:
   port: 8000
   connectDelayMs: 0
 validation:
-  echoExpected: true
   timeoutMs: 2000

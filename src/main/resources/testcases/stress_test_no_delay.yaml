@@ -1,0 +1,13 @@
+testName: StressTestNoDelay
+clients: 10
+message:
+  count: 100
+  length: 10
+  characters:
+    - DIGITS
+  frequencyMs: 0
+connection:
+  port: 8000
+  connectDelayMs: 0
+validation:
+  timeoutMs: 500
