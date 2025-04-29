@@ -88,12 +88,12 @@ public class Connection extends Thread {
     while (message != null) {
       try {
         message = reader.readLine();
+        server.broadcastMessages(message);
       } catch (SocketException e) {
         break;
       }
       if (isClosingHandshake()) break;
 
-      server.broadcastMessages(message);
     }
 
     server.unsubscribe(this);

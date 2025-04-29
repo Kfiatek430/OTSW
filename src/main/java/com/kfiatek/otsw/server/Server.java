@@ -14,6 +14,7 @@ public class Server extends Thread {
   private final Set<Connection> connections = new HashSet<>();
   private static final Logger logger = LogManager.getLogger(Server.class.getName());
   static final String address = "127.0.0.1";
+  int counter = 0;
 
   @SneakyThrows
   public Server(int port) {
@@ -47,7 +48,8 @@ public class Server extends Thread {
   }
 
   public void broadcastMessages(String message) {
-    logger.info("[+] Message: {}", message);
+    counter++;
+    logger.info("[+][{}] Message: {}", counter, message);
     connections.forEach(connection -> connection.writeMessage(message));
   }
 }
