@@ -1,32 +1,114 @@
-# OTSW - Oprogramowanie Testujące Serwer WebSocketowy ![](https://img.shields.io/badge/status-in%20progress-yellow)
+# OTSW - Websocket Server Testing Software
 
-## Spis Treści
+A Java-based testing framework for evaluating server performance under various load conditions. The project consists of a multi-threaded server and a comprehensive testing suite that can simulate multiple concurrent clients.
 
-- [Opis Projektu](#opis-projektu)
-- [Instalacja i Uruchomienie](#instalacja-i-uruchomienie)
-- [Konfiguracja](#konfiguracja)
+## Project Structure
 
-## Opis Projektu
+```
+src/
+├── main/java/com/kfiatek/otsw/
+│   ├── clients/
+│   │   ├── Client.java              # Base client interface
+│   │   ├── ConsoleClient.java       # Interactive console client
+│   │   └── TestingClient.java       # Automated testing client
+│   ├── config/
+│   │   ├── ConfigLoader.java        # YAML configuration loader
+│   │   ├── ConnectionConfig.java    # Connection settings
+│   │   ├── MessageConfig.java       # Message generation settings
+│   │   ├── TestConfig.java          # Test configuration
+│   │   └── ValidationConfig.java    # Validation settings
+│   ├── enums/
+│   │   └── TextTypes.java           # Character set types
+│   ├── helpers/
+│   │   └── Helper.java              # Helper functions
+│   ├── server/
+│   │   ├── Connection.java          # Client connection handler
+│   │   ├── Main.java                # Server entry point
+│   │   └── Server.java              # Main server class
+│   └── testingsoftware/
+│       ├── Main.java                # Testing entry point
+│       └── TestingSoftware.java     # Testing Software class
+└── resources/
+    ├── testcases/                   # Test configuration files
+    └── log4j2.xml                   # Logging configuration
+```
 
-**OTSW (Oprogramowanie Testujące Serwer WebSocketowy)** to narzędzie służące do testowania wydajności i stabilności serwera WebSocket. Projekt składa się z trzech głównych komponentów:
+## Requirements
 
-1. **Serwer WebSocket**, który ma być testowany.
-2. **Aplikacja testująca** umożliwiająca definiowanie i uruchamianie testów na podstawie plików konfiguracyjnych.
-3. **Klient WebSocket**, który będzie wykorzystywany do symulacji ruchu sieciowego wobec testowanego serwera.
+- Java 23 or higher
+- Maven 3.6+
 
-Celem projektu jest zapewnienie prostego i elastycznego sposobu testowania serwera WebSocket w różnych scenariuszach obciążenia i zachowania klientów.
+## Dependencies
 
-## Instalacja i Uruchomienie
+- **Log4j2**: Logging framework
+- **Lombok**: Code generation for boilerplate reduction
+- **SnakeYAML**: YAML configuration parsing
 
-Instrukcja instalacji i uruchomienia zostanie dodana w przyszłości.
+## Getting Started
 
-## Konfiguracja
+### 1. Clone and Build
 
-Aplikacja testująca będzie obsługiwać pliki konfiguracyjne, w których użytkownicy będą mogli definiować różne testy, m.in.:
+```bash
+git clone <repository-url>
+cd OTSW
+mvn clean compile
+```
 
-- Liczbę klientów
-- Częstotliwość wysyłania wiadomości
-- Rodzaj i treść wiadomości
-- Czas trwania testu
+### 2. Start the Server
 
-Szczegóły dotyczące formatu plików konfiguracyjnych oraz sposobu ich użycia zostaną dodane w przyszłości.
+```bash
+mvn exec:java -Dexec.mainClass="com.kfiatek.otsw.server.Main"
+```
+
+The server will start on port 8000 by default.
+
+### 3. Run Tests
+
+```bash
+mvn exec:java -Dexec.mainClass="com.kfiatek.otsw.testingsoftware.Main"
+```
+
+### 4. Interactive Console Client
+
+```bash
+mvn exec:java -Dexec.mainClass="com.kfiatek.otsw.clients.ConsoleClient"
+```
+
+## Configuration
+
+Test configurations are defined in YAML format:
+
+```yaml
+testName: "Your Test Name"
+clients: 10 # Number of concurrent clients
+message:
+  count: 100 # Messages per client
+  length: 50 # Message length in characters
+  characters: # Character sets to use
+    - LOWER_CASE
+    - UPPER_CASE
+    - DIGITS
+  frequencyMs: 10 # Delay between messages (ms)
+connection:
+  port: 8000 # Server port
+  connectDelayMs: 100 # Delay between client connections (ms)
+validation:
+  timeoutMs: 5000 # Response timeout (ms)
+```
+
+### Available Character Sets
+
+- `LOWER_CASE`: a-z
+- `UPPER_CASE`: A-Z
+- `DIGITS`: 0-9
+- `SPECIAL_CHARS`: Special characters
+
+You can modify `testingsoftware/Main.java` to use your configuration:
+
+```java
+TestConfig config = ConfigLoader.load("testcases/your_custom_test.yaml");
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
