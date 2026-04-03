@@ -35,7 +35,7 @@ src/
 
 ## Requirements
 
-- Java 23 or higher
+- Java 25
 - Maven 3.6+
 
 ## Dependencies
@@ -65,7 +65,7 @@ The server will start on port 8000 by default.
 ### 3. Run Tests
 
 ```bash
-mvn exec:java -Dexec.mainClass="com.kfiatek.otsw.testingsoftware.Main"
+mvn exec:java -Dexec.mainClass="com.kfiatek.otsw.testingsoftware.Main" -Dexec.args="testcases/multi_client_char_mix_test.yaml"
 ```
 
 ### 4. Interactive Console Client
@@ -103,10 +103,11 @@ validation:
 - `DIGITS`: 0-9
 - `SPECIAL_CHARS`: Special characters
 
-You can modify `testingsoftware/Main.java` to use your configuration:
+You can run tests using a configuration file passed as a command-line argument:
 
-```java
-TestConfig config = ConfigLoader.load("testcases/your_custom_test.yaml");
+```bash
+# Local test file
+java -cp target/classes com.kfiatek.otsw.testingsoftware.Main testcases/your_custom_test.yaml
 ```
 
 ## License
